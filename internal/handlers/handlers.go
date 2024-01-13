@@ -28,16 +28,29 @@ func ShowIndexPage(ctx *gin.Context) {
 }
 
 func GetArticle(ctx *gin.Context) {
+	// Get article from url
 	articleId := ctx.Param("article_id") 
-	article,err := models.GetArticleById(strconv.Atoi(articleId))
-
-	ctx.HTML(
-		http.StatusOK,
-		"article.html",
-		gin.H{
-			"title":article.Title,
-			"payload":article,
+	// Check if the article ID is valide
+	if articleIdInt, err := strconv.Atoi(articleId); err == nil {
+		// Check if the article exists
+		if article,err := models.GetArticleById(articleIdInt); err == nil {
+			ctx.HTML(
+				// set http status ok (200)
+				http.StatusOK,
+				// Use the article.html template
+				"article.html",
+				// Pass the date that the page use
+				gin.H{
+					"title":article.Title,
+					"payload":article,
+				},
+			)
+		} else {
+			// if the article is not found
+			ctx.AbortWithError(http.StatusNotFound,err)
 		}
-	)
-	
+	} else {
+		// if article with this ID is not found
+		ctx.AbortWithStatus(http.StatusNotFound)
+	}
 }
